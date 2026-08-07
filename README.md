@@ -1,270 +1,243 @@
-# mynet 🔱
+# MyNet: Lightweight Secure Protocol with Markdown Support
 
-**mynet** — A fully independent, lightweight, secure, and lean HTTPS replacement.
-No bloat. No fluff. Three tools, zero dependencies beyond the Python standard library.
+## Overview
 
-```
-MNET  →  TLS + minimal text protocol (the replacement for HTTPS)
-MNML  →  Python-like markup language (the replacement for HTML)
-Browser → customtkinter GUI that speaks MNET and renders MNML
-```
+MyNet is a fully independent, lightweight, secure, and lean HTTPS replacement. **Zero dependencies** beyond the Python standard library.
 
----
+The mynet:// protocol supports:
 
-## TL;DR
-
-```bash
-# 1. Create a project
-mkdir mynet && cd mynet
-
-# 2. Start the server
-./run_server.sh          # or: source .venv/bin/activate && python server.py
-
-# 3. Open the browser
-./run_browser.sh         # or: source .venv/bin/activate && python browser.py
-
-# 4. Navigate to
-#    mynet://localhost:7443/
-```
-
----
+* **MNET/1.0** - A minimal text-based protocol over TLS
+* **Markdown** - Modern, simple markup language (replacing MNML)
+* **Customtkinter GUI** - Feature-rich browser (packaged as standalone)
+* **All modern web features** - TLS, compression, caching, auth, WS, etc.
 
 ## Architecture
 
 ```
-┌─────────────┐     MNET/1.0 + TLS     ┌────────────────┐
-│  Browser    │ ◄─────────────────────► │  Server        │
-│  (GUI)      │     mynet://host:port/  │  (MynetServer) │
-│  customtk-  │                          │                │
-│  inter      │                          │  Routes, Cache │
-│             │                          │  Auth, WS, etc │
-└─────────────┘                          └────────────────┘
-         │                                      │
-         ▼                                      ▼
-    ┌──────────┐                          ┌────────────┐
-    │ MNML     │  Python-like syntax      │ Static     │
-    │ Parser   │  → renders to widgets    │ File Server │
-    │          │                          │ (range req) │
-    └──────────┘                          └────────────┘
+┌─────────────┐     MNET/1.0 + TLS     ┌─────────────────┐
+│  Browser    │ ◄────────────────────► │  MyNet Server   │
+│  (GUI)      │     mynet://host:port/  │  (mynet.py)     │
+│             │                          │  Routes, Cache  │
+│             │                          │  Auth, WS, etc. │
+└─────────────┘                          └─────────────────┘
+          │                                      │
+          ▼                                      ▼
+     ┌──────────┐                          ┌────────────┐
+     │ Markdown │  Python-like syntax      │ Static     │
+     │ Parser   │  → renders to widgets    │ File Server │
+     │          │                          │ (range req) │
+     └──────────┘                          └────────────┘
 ```
-
----
 
 ## What's Inside
 
-### 1. `mynet.py` — The Protocol Engine
+### 1. `mynet.py` - The Protocol Engine
 
-| Feature           | Details                                      |
-|-------------------|----------------------------------------------|
-| Protocol          | `MNET/1.0` over TLS                         |
-| Encryption        | Python `ssl` module (no crypto hand-rolled) |
-| Server            | Multi-threaded, concurrent connections      |
-| Client            | `fetch()` / `post()` helper functions       |
-| Cache             | In-memory LRU with TTL                      |
-| Compression       | Automatic gzip for responses > 100 bytes    |
-| Range Requests    | `bytes=0-499` partial downloads             |
-| Static Files      | Serve any file type with auto MIME detection|
-| Authentication    | Bearer token middleware                     |
-| WebSocket         | Built-in WS upgrade handler + echo server   |
-| File Upload       | multipart/form-data parsing                 |
-| JSON API          | `json_response()` / `json_body()` helpers   |
-| Logging           | Timestamped request log                     |
-| Custom Headers    | Full control over response headers          |
+The core MNET/1.0 implementation with all features:
 
-### 2. `mn.py` — MNML Parser
+* **Protocol**: MNET/1.0 over TLS
+* **Security**: SSL/TLS encryption, optional auth, rate limiting
+* **Performance**: Automatic gzip compression, LRU cache
+* **Features**: WebSocket, file upload, range requests, JSON API
+* **Size**: ~26KB (including all features)
 
-| Tag      | Purpose                       | Example                                  |
-|----------|-------------------------------|------------------------------------------|
-| `title`  | Page title (browser window)   | `title: My Page`                         |
-| `h1-h6`  | Headings                      | `h1: Main Heading`                       |
-| `p`      | Paragraph                     | `p: Some text here`                      |
-| `bold`   | Bold text                     | `bold: Important`                        |
-| `italic` | Italic text                   | `italic: Emphasized`                     |
-| `code`   | Inline code block             | `code: x = 42`                           |
-| `pre`    | Preformatted block            | `pre:\n    indented text`                |
-| `ul`     | Unordered list                | `ul:\n    - item1`                       |
-| `ol`     | Ordered list                  | `ol:\n    - first`                       |
-| `li`     | List item (auto-parsed)       | `- item`                                 |
-| `link`   | Hyperlink                     | `link("https://example.com"): Click`     |
-| `image`  | Image placeholder             | `image("pic.png")`                       |
-| `video`  | Video element                 | `video("clip.mp4")`                      |
-| `audio`  | Audio element                 | `audio("song.mp3")`                      |
-| `table`  | Table with rows/cells         | `table:\n    row:\n        cell: A`       |
-| `form`   | Form with inputs              | `form(action):\n    input(name="user")`   |
-| `input`  | Form input field              | `input(type="text", placeholder="Name")` |
-| `button` | Clickable button              | `button: Submit`                         |
-| `hr`     | Horizontal rule               | `hr:`                                    |
+### 2. `mynet_main.py` - Command Line Interface
 
-**Syntax rules:**
-- Indentation = nesting (like Python)
-- No closing tags
-- `tag(args): content` for tags with arguments
-- `tag: content` for simple tags
-- `- value` for list items
-- `# comment` for comments
+Standalone executable entry point with:
 
-**Bonus:** `mn.to_html()` converts MNML to HTML string for export.
+* **Server controls**: Start/stop, configuration
+* **Certificate management**: Self-signed certs
+* **File serving**: Direct .md file serving
+* **Environment config**: Tokens, rate limits, ports
 
-### 3. `browser.py` — The Browser
+### 3. `browser.py` - GUI Browser
 
-A feature-rich customtkinter GUI browser that speaks MNET and renders MNML natively.
+Feature-rich browser (packaged as standalone):
 
-**Features:**
-- Tabbed browsing (`Cmd+T`, `Cmd+W`, `Cmd+1..5`)
-- Back / Forward navigation
-- Refresh (F5, `Cmd+R`)
-- Zoom in/out (`Cmd+Plus`, `Cmd+Minus`)
-- Dark / Light theme toggle
-- Bookmarks management (★ button)
-- Browsing history
-- Find on page (`Cmd+F`)
-- View source code (`📄` button)
-- Save page as `.mn` file (`💾` button)
-- Copy URL to clipboard (`📋URL`)
-- Fullscreen mode (`⛶`, `Esc`)
-- Authentication token input (`🔐`)
-- File upload (`⬆ Upload`)
-- JSON API tester (`📡 API Helper`)
-- Video / Audio rendering with system player option
-- Responsive MNML rendering (tables, forms, lists)
+* **Tabbed browsing** (`Cmd+T`, `Cmd+W`, `Cmd+1..5`)
+* **Navigation**: Back/forward/refresh
+* **Security**: Auth token, bookmarks, history
+* **Development**: Source viewer, API tester
+* **Multimedia**: Video/audio playback with system players
 
-**Keyboard Shortcuts:**
-| Shortcut       | Action              |
-|----------------|---------------------|
-| `Cmd+T`        | New tab             |
-| `Cmd+W`        | Close tab           |
-| `Cmd+R` / `F5` | Refresh             |
-| `Cmd+L`        | Focus URL bar       |
-| `Cmd+F`        | Find in page        |
-| `Cmd+Plus`     | Zoom in             |
-| `Cmd+Minus`    | Zoom out            |
-| `Cmd+1..5`     | Switch tab          |
-| `Esc`          | Exit fullscreen     |
+### 4. `server.py` - Example Server
 
----
+Demonstrates all MNET features:
 
-## MNML vs HTML — Comparison
+* **Routes**: REST API endpoints
+* **Static files**: Public directory serving
+* **WebSocket**: Real-time communication
+* **Authentication**: Token-based auth
 
-### HTML version
-```html
-<!DOCTYPE html>
-<html>
-<head><title>My Page</title></head>
-<body>
-  <h1>Hello World</h1>
-  <p>This is a paragraph.</p>
-  <ul>
-    <li>Item 1</li>
-    <li>Item 2</li>
-  </ul>
-  <a href="/about">About</a>
-</body>
-</html>
+## Usage
+
+### Quick Start (Pre-packaged binaries)
+
+```bash
+# 1. Start the server (or use the standalone binary)
+./run_server.sh
+
+# 2. Use the browser (or use the standalone binary)
+./run_browser.sh
+
+# 3. Navigate to the site
+mynet://localhost:7443/
 ```
 
-### MNML version
-```mnml
-title: My Page
+### With Standalone Binaries
 
-h1: Hello World
+```bash
+# Start server using packaged binary
+./mynet
 
-p: This is a paragraph.
+# Start browser using packaged binary  
+./mynet-browser
 
-ul:
-    - Item 1
-    - Item 2
-
-link("/about"): About
+# Navigate to the site
+mynet://localhost:7443/
 ```
 
-**Lines saved: 18 → 10 (−44%)**
+### Server Configuration
 
----
+Environment variables for server customization:
 
-## Project Structure
+```bash
+# Authentication
+export MNET_SECRET_KEY="your-token-here"
 
-```
-mynet/
-├── mynet.py            # MNET protocol (server + client)
-├── mn.py               # MNML parser + HTML converter
-├── browser.py           # customtkinter browser GUI
-├── server.py            # Example server with routes
-├── run_server.sh        # Server launcher (venv-aware)
-├── run_browser.sh       # Browser launcher (venv-aware)
-├── .venv/               # Python 3.14 virtual environment
-├── certs/               # TLS certificates (auto-generated)
-├── public/              # Static files directory (for file serving)
-├── MNML_TUTORIAL.md     # Full MNML syntax guide
-├── README.md            # ← You're here
-└── AGENTS.md            # Agent instructions (this file)
+# Rate limiting
+export MNET_RATE_LIMIT_REQUESTS=200
+export MNET_RATE_LIMIT_WINDOW=1800
+
+# Server settings
+export MNET_HOST=0.0.0.0
+export MNET_PORT=7443
+
+# Request size limit
+export MNET_MAX_REQUEST_SIZE=2097152
 ```
 
----
-
-## API Reference
-
-### Server
+### API Examples
 
 ```python
 import mynet
 
-app = mynet.Server(port=7443, static_dir="public", token="secret")
+# Create server with auth
+app = mynet.Server(port=7443, token="secret123")
 
-@app.route("/")
-def home(req):
-    return "Hello World"
+# JSON API endpoint
+@app.route("/api/data")
+def api_data(req):
+    return mynet.json_response({
+        "status": "ok",
+        "protocol": "MNET/1.0",
+        "features": ["cache", "gzip", "range", "ws", "upload", "auth"]
+    })
 
-@app.route("/api.json")
-def api(req):
-    return mynet.json_response({"status": "ok", "data": [1, 2, 3]})
-
-@app.route("/api/echo", methods=["POST"])
-def echo(req):
-    data = mynet.json_body(req)
-    return mynet.json_response({"echo": data})
-
+# WebSocket endpoint
 @app.ws("/ws")
 def ws_handler(ws, addr):
     msg = ws.recv()
     ws.send(f"Echo: {msg}")
-
-app.start()
 ```
 
-### Client
+### Client Examples
 
 ```python
 import mynet
 
-# GET
+# GET request
 resp = mynet.fetch("localhost", "/", 7443)
 print(resp.body.decode())
-print(resp.status)
-print(resp.headers)
 
-# POST JSON
-resp = mynet.post("localhost", "/api/echo", json.dumps({"msg": "hi"}), 7443,
-                  headers={"Content-Type": "application/json"})
+# POST JSON data
+resp = mynet.post(
+    "localhost", "/api/echo", 
+    '{"msg": "hello"}', 7443,
+    headers={"Content-Type": "application/json"}
+)
+print(resp.body.decode())
 ```
 
-### MNML Parser
+## Packaging
 
-```python
-import mn
+MyNet is packaged using **PyInstaller** for:
 
-elements = mn.parse(source_text)
-html_output = mn.to_html(elements)
+* **Portability**: Works on macOS, Linux, Windows
+* **Single file**: Console binary for the protocol
+* **GUI binary**: Standalone browser without Python dependencies
+* **Zero installation**: No external libraries required
+
+## Markdown Support
+
+MyNet uses **Markdown** (not MNML) for:
+
+* **Syntax simplicity**: Modern, readable format
+* **Ecosystem**: Compatible with GitHub, StackExchange, etc.
+* **Tools**: Rich editor support everywhere
+
+### Markdown Examples
+
+```markdown
+# Title
+
+## Subtitle
+
+This is a paragraph with **bold** and *italic* text.
+
+### Lists
+
+- Item 1
+- Item 2
+- Item 3
+
+1. First item
+2. Second item
+3. Third item
+
+### Links and Images
+
+[Google](https://google.com)
+
+![Logo](/path/to/logo.png)
+
+### Code
+
+`inline code`
+
+```
+multiline code
 ```
 
----
+### Tables
 
-## Setup
+| Name | Age | City |
+|------|-----|------|
+| Alice | 25 | New York |
+| Bob | 30 | London |
+```
 
-### Prerequisites
-- macOS / Linux / Windows with Python 3.10+
-- Homebrew (macOS) for TLS support
+## Features Comparison
 
-### Install
+| Feature | MNET/1.0 | HTTPS |
+|---------|----------|-------|
+| Header size | ~50 bytes | ~300+ bytes |
+| Dependencies | Python stdlib only | OpenSSL, http library |
+| Protocol | MNET/1.0 GET /\r\n... | HTTP/1.1 GET / HTTP/1.1\r\n... |
+| Encryption | TLS (built-in) | TLS |
+| Response | Status + headers + body | Complex headers + body |
+| Lines of code | ~200 (protocol) | Thousands |
+
+## Performance
+
+* **Faster headers**: 6x smaller HTTP requests
+* **Simpler stack**: No complex HTTP/2 negotiation
+* **Lower memory**: Fewer dependencies
+* **Quick setup**: Self-signed certs, no config files
+
+## Installation
+
+### From Source
 
 ```bash
 cd mynet
@@ -273,40 +246,22 @@ source .venv/bin/activate
 pip install customtkinter
 ```
 
-### Run
+### Using Packaged Binaries
+
+Download the latest release from GitHub and run:
 
 ```bash
-# Terminal 1 — Server
-./run_server.sh
+# On Linux/macOS
+chmod +x mynet
+./mynet
 
-# Terminal 2 — Browser
-./run_browser.sh
+chmod +x mynet-browser  
+./mynet-browser
 ```
-
-Then open `mynet://localhost:7443/` in the browser.
-
----
-
-## Why MNET?
-
-| Metric        | HTTPS (HTTP/2 + TLS 1.3) | MNET/1.0         |
-|---------------|---------------------------|-------------------|
-| Header size   | ~300+ bytes per request   | ~50 bytes         |
-| Dependencies  | OpenSSL, http library     | `ssl`, `socket`   |
-| Protocol line | `GET / HTTP/1.1\r\n...`   | `MNET/1.0 GET /`  |
-| Encryption    | TLS (mandatory)           | TLS (built-in)    |
-| Response      | Complex headers + body    | Status + headers + body |
-| Lines of code | Thousands                 | ~200 (protocol)   |
-
-**Philosophy:** If it can be smaller, make it smaller. If it can be simpler, make it simpler. If it doesn't need a dependency, remove it.
-
----
 
 ## License
 
 MIT — do whatever you want with it.
-
----
 
 ## Contributing
 
@@ -314,7 +269,5 @@ MIT — do whatever you want with it.
 2. Commit your changes
 3. Send a PR
 4. Get merged or get wrecked
-
----
 
 *Built with zero dependencies and maximum style. No bloat. No fluff. Just net.™*

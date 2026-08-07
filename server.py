@@ -17,211 +17,200 @@ app = mynet.Server(
 )
 
 HOME = """\
-title: صفحه اصلی — MyNet
+# Welcome to MyNet
 
-h1: به MyNet خوش آمدید!
+This is a sample page on the MNET protocol.
 
-p: این یک صفحه نمونه روی پروتکل MNET است.
+---
 
-hr:
+## Server Features
 
-h2: قابلیت‌های سرور
+- Static files (images, video, audio)
+- Automatic gzip compression
+- Response caching
+- Range Request (partial downloads)
+- Request logging
+- File upload
+- Token authentication
+- WebSocket
+- JSON API
+- Custom headers
 
-ul:
-    - فایل‌های استاتیک (تصاویر، ویدیو، صدا)
-    - فشرده‌سازی gzip خودکار
-    - کش پاسخ‌ها
-    - Range Request (دانلود جزئی)
-    - لاگ درخواست‌ها
-    - آپلود فایل
-    - احراز هویت با توکن
-    - WebSocket
-    - API JSON
-    - هدر سفارشی
+---
 
-hr:
+## Sample Pages
 
-h2: صفحات نمونه
+- [About MyNet](mynet://localhost:7443/about)
+- [Tag Demo](mynet://localhost:7443/demo)
+- [JSON API](mynet://localhost:7443/api)
+- [Upload Page](mynet://localhost:7443/upload)
+- [WebSocket Chat](mynet://localhost:7443/ws-chat)
 
-link("mynet://localhost:7443/about"): درباره MyNet
-link("mynet://localhost:7443/demo"): دموی تگ‌ها
-link("mynet://localhost:7443/api"): API نمونه
-link("mynet://localhost:7443/upload"): صفحه آپلود
-link("mynet://localhost:7443/ws-chat"): چت WebSocket
+---
 
-hr:
+### Media
 
-h2: مالتی مدیا
+Sample video:
 
-p: ویدیوی نمونه:
-video(mynet://localhost:7443/sample.mp4)
+```
+[video: mynet://localhost:7443/sample.mp4]
+```
 
-p: صدای نمونه:
-audio(mynet://localhost:7443/sample.mp3)
+Sample audio:
 
-hr:
+```
+[audio: mynet://localhost:7443/sample.mp3]
+```
 
-code: pip install customtkinter
+---
+
+```
+pip install customtkinter
+```
 """
 
 ABOUT = """\
-title: درباره MyNet
+# About MyNet
 
-h1: درباره MyNet
+MyNet is a lightweight, secure alternative to HTTPS.
 
-p: MyNet یک جایگزین سبک و امن برای HTTPS است.
+## MNET Protocol
 
-h2: پروتکل MNET
+- TLS Encryption
+- Lightweight request/response format
+- Range Request support
+- Gzip compression
+
+## MN Language
+
+Syntax similar to Python:
+
+```
+title: My Page
+
+h1: Hello World
+
+p: A paragraph
 
 ul:
-    - رمزنگاری TLS
-    - فرمت سبک درخواست/پاسخ
-    - پشتیبانی از Range Request
-    - فشرده‌سازی gzip
-
-h2: زبان MN
-
-p: سینتکس شبیه پایتون:
-
-code:
- title: صفحه من
-
- h1: سلام دنیا
-
- p: پاراگراف
-
- ul:
-     - آیتم اول
-     - آیتم دوم
+    - First item
+    - Second item
 
 hr:
 
-link("mynet://localhost:7443/"): صفحه اصلی
+link("mynet://localhost:7443/"): Home
+```
+
+- [Home](mynet://localhost:7443/)
 """
 
 DEMO = """\
-title: دموی تگ‌ها
+# Tag Demo
 
-h1: دموی تمام تگ‌های MN
+---
 
-hr:
+## Headings
 
-h2: عنوان‌ها
+# h1 Heading
+## h2 Heading
+### h3 Heading
+#### h4 Heading
 
-h1: h1 عنوان
-h2: h2 عنوان
-h3: h3 عنوان
-h4: h4 عنوان
+---
 
-hr:
+## Text
 
-h2: متن
+This is a normal paragraph.
 
-p: این یک پاراگراف معمولی است.
+**This text is bold.**
 
-bold: این متن ضخیم است.
+```
+This is code
+```
 
-code: این کد است
+---
 
-hr:
+## Lists
 
-h2: لیست
+### Unordered List
+- Item 1
+- Item 2
+- Item 3
 
-ul:
-    - بدون ترتیب ۱
-    - بدون ترتیب ۲
-    - بدون ترتیب ۳
+### Ordered List
+1. First
+2. Second
+3. Third
 
-ol:
-    - مرتب ۱
-    - مرتب ۲
-    - مرتب ۳
+---
 
-hr:
+## Links
 
-h2: جدول
-
-table:
-    row:
-        cell: نام
-        cell: سن
-        cell: شهر
-    row:
-        cell: علی
-        cell: 25
-        cell: تهران
-    row:
-        cell: سارا
-        cell: 22
-        cell: اصفهان
-
-hr:
-
-h2: فرم
-
-form(mynet://localhost:7443/api):
-    input(name="username", placeholder="نام کاربری")
-    input(name="password", type="password", placeholder="رمز عبور")
-    button: ورود
-
-hr:
-
-h2: لینک‌ها
-
-link("mynet://localhost:7443/"): صفحه اصلی
-link("mynet://localhost:7443/about"): درباره
+- [Home](mynet://localhost:7443/)
+- [About](mynet://localhost:7443/about)
 """
 
 API = """\
-title: API نمونه
+# JSON API
 
-h1: API JSON
+This page is a simple JSON API.
 
-p: این صفحه یک API JSON ساده است.
+```
+GET /api/data → JSON
+POST /api/data → JSON
+```
 
-code:
- GET /api/data → JSON
- POST /api/data → JSON
+To test:
 
-p: برای تست:
+```
+curl -k mynet://localhost:7443/api/data
+```
 
-code:
- curl -k mynet://localhost:7443/api/data
-
-link("mynet://localhost:7443/"): صفحه اصلی
+- [Home](mynet://localhost:7443/)
 """
 
 UPLOAD_PAGE = """\
-title: آپلود فایل
+# File Upload
 
-h1: آپلود فایل
+Use the Upload button in the toolbar.
 
-p: از دکمه ⬆ Upload در نوار ابزار استفاده کنید.
+Files are sent to the server.
 
-p: فایل به سرور ارسال می‌شود.
-
-link("mynet://localhost:7443/"): صفحه اصلی
+- [Home](mynet://localhost:7443/)
 """
 
 WS_CHAT = """\
-title: چت WebSocket
+# WebSocket Chat
 
-h1: چت WebSocket
+This page supports WebSocket.
 
-p: این صفحه از WebSocket پشتیبانی می‌کند.
+More features coming soon...
 
-p: به زودی...
-
-link("mynet://localhost:7443/"): صفحه اصلی
+- [Home](mynet://localhost:7443/)
 """
+
 
 # ── Routes ────────────────────────────────────────────────────────
 
-app.route("/")(lambda req: HOME)
-app.route("/about")(lambda req: ABOUT)
-app.route("/demo")(lambda req: DEMO)
-app.route("/upload")(lambda req: UPLOAD_PAGE)
-app.route("/ws-chat")(lambda req: WS_CHAT)
+@app.route("/")
+def index(req):
+    return mynet.parse_md(HOME)
+
+@app.route("/about")
+def about(req):
+    return mynet.parse_md(ABOUT)
+
+@app.route("/demo")
+def demo(req):
+    return mynet.parse_md(DEMO)
+
+@app.route("/upload")
+def upload(req):
+    return mynet.parse_md(UPLOAD_PAGE)
+
+@app.route("/ws-chat")
+def ws_chat(req):
+    return mynet.parse_md(WS_CHAT)
 
 
 # ── JSON API ──────────────────────────────────────────────────────
@@ -244,7 +233,7 @@ def api_echo(req):
 # ── WebSocket handler ─────────────────────────────────────────────
 
 @app.ws("/ws")
-def ws_chat(ws, addr):
+def ws_handler(ws, addr):
     print(f"[WS] {addr} connected")
     try:
         while True:

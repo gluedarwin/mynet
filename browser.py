@@ -241,116 +241,98 @@ class MyNetBrowser(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         main_layout = QVBoxLayout(central)
-        main_layout.setContentsMargins(4, 4, 4, 4)
-        main_layout.setSpacing(4)
+        main_layout.setContentsMargins(6, 6, 6, 6)
+        main_layout.setSpacing(6)
 
         self.tab_bar = QTabBar()
         self.tab_bar.setTabsClosable(True)
-        self.tab_bar.tabCloseRequested.connect(self._close_tab)
-        main_layout.addWidget(self.tab_bar)
+        self.tab_bar.tabCloseRequested.connect(self._on_tab_close_requested)
+
+        self.add_tab_btn = QToolButton()
+        self.add_tab_btn.setText("+")
+        self.add_tab_btn.setToolTip("New Tab (Ctrl+T)")
+        self.add_tab_btn.setFixedSize(28, 24)
+        self.add_tab_btn.clicked.connect(self._new_tab)
+
+        tab_nav = QHBoxLayout()
+        tab_nav.setSpacing(2)
+        tab_nav.setContentsMargins(0, 0, 0, 0)
+        tab_nav.addWidget(self.tab_bar, 1)
+        tab_nav.addWidget(self.add_tab_btn)
+        main_layout.addLayout(tab_nav)
 
         nav = QHBoxLayout()
         nav.setSpacing(4)
+        nav.setContentsMargins(0, 0, 0, 0)
 
         self.back_btn = QToolButton()
         self.back_btn.setText("◀")
+        self.back_btn.setFixedSize(28, 28)
         self.back_btn.clicked.connect(self._back)
+        self.back_btn.setToolTip("Back (Ctrl+[)")
         nav.addWidget(self.back_btn)
 
         self.fwd_btn = QToolButton()
         self.fwd_btn.setText("▶")
+        self.fwd_btn.setFixedSize(28, 28)
         self.fwd_btn.clicked.connect(self._fwd)
+        self.fwd_btn.setToolTip("Forward (Ctrl+])")
         nav.addWidget(self.fwd_btn)
 
         self.refresh_btn = QToolButton()
         self.refresh_btn.setText("↻")
+        self.refresh_btn.setFixedSize(28, 28)
         self.refresh_btn.clicked.connect(self._refresh)
+        self.refresh_btn.setToolTip("Refresh (F5)")
         nav.addWidget(self.refresh_btn)
 
         self.url_edit = QLineEdit()
         self.url_edit.setPlaceholderText("mynet://localhost:7443/")
         self.url_edit.returnPressed.connect(self._go)
+        self.url_edit.setFixedHeight(28)
         nav.addWidget(self.url_edit, 1)
 
         self.go_btn = QToolButton()
         self.go_btn.setText("→")
+        self.go_btn.setFixedSize(28, 28)
         self.go_btn.clicked.connect(self._go)
+        self.go_btn.setToolTip("Go")
         nav.addWidget(self.go_btn)
 
         self.bookmark_btn = QToolButton()
         self.bookmark_btn.setText("☆")
+        self.bookmark_btn.setFixedSize(28, 28)
         self.bookmark_btn.clicked.connect(self._toggle_bookmark)
+        self.bookmark_btn.setToolTip("Toggle Bookmark")
         nav.addWidget(self.bookmark_btn)
 
         main_layout.addLayout(nav)
 
         toolbar = QHBoxLayout()
         toolbar.setSpacing(2)
+        toolbar.setContentsMargins(0, 0, 0, 0)
 
-        self.find_btn = QToolButton()
-        self.find_btn.setText("🔍 Find")
-        self.find_btn.clicked.connect(self._show_find)
-        toolbar.addWidget(self.find_btn)
-
-        self.history_btn = QToolButton()
-        self.history_btn.setText("📋 History")
-        self.history_btn.clicked.connect(self._show_history)
-        toolbar.addWidget(self.history_btn)
-
-        self.bookmarks_btn = QToolButton()
-        self.bookmarks_btn.setText("⭐ Marks")
-        self.bookmarks_btn.clicked.connect(self._show_bookmarks)
-        toolbar.addWidget(self.bookmarks_btn)
-
-        self.source_btn = QToolButton()
-        self.source_btn.setText("📄 Source")
-        self.source_btn.clicked.connect(self._view_source)
-        toolbar.addWidget(self.source_btn)
-
-        self.save_btn = QToolButton()
-        self.save_btn.setText("💾 Save")
-        self.save_btn.clicked.connect(self._save_page)
-        toolbar.addWidget(self.save_btn)
-
-        self.theme_btn = QToolButton()
-        self.theme_btn.setText("☀ Theme")
-        self.theme_btn.clicked.connect(self._toggle_theme)
-        toolbar.addWidget(self.theme_btn)
-
-        self.zoom_in_btn = QToolButton()
-        self.zoom_in_btn.setText("A+")
-        self.zoom_in_btn.clicked.connect(self._zoom_in)
-        toolbar.addWidget(self.zoom_in_btn)
-
-        self.zoom_out_btn = QToolButton()
-        self.zoom_out_btn.setText("A-")
-        self.zoom_out_btn.clicked.connect(self._zoom_out)
-        toolbar.addWidget(self.zoom_out_btn)
-
-        self.fullscreen_btn = QToolButton()
-        self.fullscreen_btn.setText("⛶ Full")
-        self.fullscreen_btn.clicked.connect(self._toggle_fullscreen)
-        toolbar.addWidget(self.fullscreen_btn)
-
-        self.copy_url_btn = QToolButton()
-        self.copy_url_btn.setText("📋URL")
-        self.copy_url_btn.clicked.connect(self._copy_url)
-        toolbar.addWidget(self.copy_url_btn)
-
-        self.auth_btn = QToolButton()
-        self.auth_btn.setText("🔐 Auth")
-        self.auth_btn.clicked.connect(self._show_auth)
-        toolbar.addWidget(self.auth_btn)
-
-        self.api_btn = QToolButton()
-        self.api_btn.setText("📡 API")
-        self.api_btn.clicked.connect(self._show_api_helper)
-        toolbar.addWidget(self.api_btn)
-
-        self.upload_btn = QToolButton()
-        self.upload_btn.setText("⬆ Upload")
-        self.upload_btn.clicked.connect(self._show_upload)
-        toolbar.addWidget(self.upload_btn)
+        for txt, cmd, tip in [
+            ("🔍 Find", self._show_find, "Find (Cmd+F)"),
+            ("📋 History", self._show_history, "History"),
+            ("⭐ Marks", self._show_bookmarks, "Bookmarks"),
+            ("📄 Source", self._view_source, "View Source"),
+            ("💾 Save", self._save_page, "Save Page"),
+            ("☀ Theme", self._toggle_theme, "Toggle Theme"),
+            ("A+", self._zoom_in, "Zoom In"),
+            ("A-", self._zoom_out, "Zoom Out"),
+            ("⛶ Full", self._toggle_fullscreen, "Fullscreen"),
+            ("📋URL", self._copy_url, "Copy URL"),
+            ("🔐 Auth", self._show_auth, "Authentication"),
+            ("📡 API", self._show_api_helper, "API Helper"),
+            ("⬆ Upload", self._show_upload, "Upload File"),
+        ]:
+            btn = QToolButton()
+            btn.setText(txt)
+            btn.setFixedSize(70, 24)
+            btn.setToolTip(tip)
+            btn.clicked.connect(cmd)
+            toolbar.addWidget(btn)
 
         main_layout.addLayout(toolbar)
 
@@ -372,13 +354,11 @@ class MyNetBrowser(QMainWindow):
         self._renderer = None
         self._update_tab_bar()
         self.tab_bar.currentChanged.connect(self._on_tab_changed)
+        self._render_tab()
 
     def _update_tab_bar(self):
         while self.tab_bar.count() > 0:
             self.tab_bar.removeTab(0)
-        for i, tab in enumerate(self.tabs):
-            label = tab.title[:14] + "..." if len(tab.title) > 14 else tab.title or "New Tab"
-            self.tab_bar.addTab(label)
         for i, tab in enumerate(self.tabs):
             label = tab.title[:14] + "..." if len(tab.title) > 14 else tab.title or "New Tab"
             self.tab_bar.addTab(label)
@@ -394,11 +374,7 @@ class MyNetBrowser(QMainWindow):
         tab = self.tabs[self.tab_index]
         self.url_edit.setText(tab.url)
         self._update_bookmark_btn()
-
-        for i in range(self.content_layout.count()):
-            child = self.content_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+        self._clear_content()
 
         if tab.source:
             self._render_content(tab.source)
@@ -440,7 +416,7 @@ class MyNetBrowser(QMainWindow):
         self._update_tab_bar()
         self._render_tab()
 
-    def _close_tab(self, idx):
+    def _on_tab_close_requested(self, idx):
         if len(self.tabs) <= 1:
             return
         self.tabs.pop(idx)
@@ -619,35 +595,104 @@ class MyNetBrowser(QMainWindow):
 
     def _show_bookmarks(self):
         self._clear_content()
+
+        header = QHBoxLayout()
+        header.addWidget(QLabel("Bookmarks"))
+        header.addStretch()
+        clear_btn = QPushButton("Clear All")
+        clear_btn.clicked.connect(self._clear_bookmarks)
+        header.addWidget(clear_btn)
+        self.content_layout.addLayout(header)
+
         lbl = QLabel("Bookmarks")
         lbl.setStyleSheet("font-size: 22pt; font-weight: bold;")
-        self.content_layout.addWidget(lbl)
 
         if not self.bookmarks:
-            lbl = QLabel("No bookmarks.")
+            lbl = QLabel("No bookmarks yet.\n\nBrowse to a page and click the ★ button to save it here.")
+            lbl.setStyleSheet("font-size: 14pt; color: #888;")
+            lbl.setWordWrap(True)
             self.content_layout.addWidget(lbl)
             return
 
+        container = QWidget()
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setSpacing(4)
+
         for b in self.bookmarks:
-            btn = QPushButton(b.get("title", b.get("url", "")))
+            row = QHBoxLayout()
+            btn = QPushButton(b.get("title") or b.get("url", ""))
+            btn.setToolTip(b.get("url", ""))
             btn.clicked.connect(lambda _, u=b.get("url"): self._load(u))
-            self.content_layout.addWidget(btn)
+            row.addWidget(btn, 1)
+
+            if b.get("title") and b.get("url"):
+                url_lbl = QLabel(b.get("url", ""))
+                url_lbl.setStyleSheet("color: #888; font-size: 11pt;")
+                url_lbl.setTextFormat(Qt.TextFormat.RichText)
+                url_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                row.addWidget(url_lbl)
+
+            del_btn = QPushButton("✕")
+            del_btn.setFixedSize(24, 24)
+            del_btn.setStyleSheet("color: #ff5555;")
+            del_btn.clicked.connect(lambda _, u=b.get("url"): self._remove_bookmark(u))
+            row.addWidget(del_btn)
+
+            container_layout.addLayout(row)
+
+        self.content_layout.addWidget(container)
+
+    def _remove_bookmark(self, url):
+        self.bookmarks = [b for b in self.bookmarks if b.get("url") != url]
+        _save_json(BOOKMARKS_FILE, self.bookmarks)
+        self._show_bookmarks()
+
+    def _clear_bookmarks(self):
+        self.bookmarks = []
+        _save_json(BOOKMARKS_FILE, self.bookmarks)
+        self._show_bookmarks()
 
     def _show_history(self):
         self._clear_content()
-        lbl = QLabel("History")
-        lbl.setStyleSheet("font-size: 22pt; font-weight: bold;")
-        self.content_layout.addWidget(lbl)
+
+        header = QHBoxLayout()
+        header.addWidget(QLabel("History"))
+        header.addStretch()
+        clear_btn = QPushButton("Clear All")
+        clear_btn.clicked.connect(self._clear_history)
+        header.addWidget(clear_btn)
+        self.content_layout.addLayout(header)
 
         if not self.history:
-            lbl = QLabel("No history.")
+            lbl = QLabel("No history yet.\n\nNavigate to pages and they'll appear here.")
+            lbl.setStyleSheet("font-size: 14pt; color: #888;")
+            lbl.setWordWrap(True)
             self.content_layout.addWidget(lbl)
             return
 
+        container = QWidget()
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setSpacing(2)
+
         for url in reversed(self.history[-50:]):
+            row = QHBoxLayout()
             btn = QPushButton(url)
+            btn.setToolTip(url)
             btn.clicked.connect(lambda _, u=url: self._load(u))
-            self.content_layout.addWidget(btn)
+            btn.setTextFormat(Qt.TextFormat.RichText)
+            btn.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            btn.setStyleSheet("text-align: left; padding: 4px 8px;")
+            row.addWidget(btn, 1)
+            container_layout.addLayout(row)
+
+        self.content_layout.addWidget(container)
+
+    def _clear_history(self):
+        self.history = []
+        _save_json(HISTORY_FILE, self.history)
+        self._show_history()
 
     def _view_source(self):
         tab = self.tabs[self.tab_index]
